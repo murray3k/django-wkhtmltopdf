@@ -328,7 +328,9 @@ def render_to_temporary_file(template, context, request=None, mode='w+b',
         else:
             content = render(context, request)
     content = smart_text(content)
-    content = make_absolute_paths(content)
+    
+    if getattr(settings, 'WKHTMLTOPDF_CONVERT_PATHS', True):
+        content = make_absolute_paths(content)
 
     try:
         # Python3 has 'buffering' arg instead of 'bufsize'
