@@ -8,7 +8,7 @@ import sys
 import shlex
 from tempfile import NamedTemporaryFile
 
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
 
 try:
     from urllib.request import pathname2url
@@ -292,16 +292,17 @@ def make_absolute_paths(content):
     for x in overrides:
         if not x['url'] or has_scheme.match(x['url']):
             continue
-
-        if not x['root'].endswith('/'):
-            x['root'] += '/'
+            
+        root = str(x['root'])
+        if not root.endswith('/'):
+            root += '/'
 
         occur_pattern = '''(["|']{0}.*?["|'])'''
         occurences = re.findall(occur_pattern.format(x['url']), content)
         occurences = list(set(occurences))  # Remove dups
         for occur in occurences:
             content = content.replace(occur, '"%s"' % (
-                                      pathname2fileurl(x['root']) +
+                                      pathname2fileurl(root) +
                                       occur[1 + len(x['url']): -1]))
 
 
@@ -327,7 +328,7 @@ def render_to_temporary_file(template, context, request=None, mode='w+b',
             content = render(context)
         else:
             content = render(context, request)
-    content = smart_text(content)
+    content = smart_str(content)
     
     if getattr(settings, 'WKHTMLTOPDF_CONVERT_PATHS', True):
         content = make_absolute_paths(content)
